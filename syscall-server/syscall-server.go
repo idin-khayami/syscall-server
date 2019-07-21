@@ -2,15 +2,36 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net"
 	"os"
 	"syscall"
+	"time"
 )
 
 const (
 	COMMON_HOST = "localhost"
 	COMMON_PORT = 1074
 )
+
+func handleConnection(clientSock int, clientAddr syscall.Sockaddr) {
+	//Send Message
+	message := "HTTP/1.1 200 OK\r\n" +
+		"Content-Type: text/html; charset=utf-8\r\n" +
+		"Content-Length: 20\r\n" +
+		"\r\n" +
+		"<h1>hello world</h1>"
+	time.Sleep(150 * time.Millisecond)
+
+	err := syscall.Sendmsg(clientSock, []byte(message), []byte{}, clientAddr, 0)
+
+	if err != nil {
+		os.NewSyscallError("Error On Send...", err)
+	}
+
+	//Close Connection After SendMsg
+	syscall.Close(clientSock)
+}
 
 func main() {
 	/*
@@ -45,18 +66,15 @@ func main() {
 	} else {
 		fmt.Println("Listen On", COMMON_HOST, ":", COMMON_PORT)
 	}
-	//Accept
-	clientSock, clientAddr, err := syscall.Accept(fd)
-	if err != nil {
-		os.NewSyscallError("Error On Accept...", err)
-	}
-	//Send Message
-	message := "Hello! YoOoHoOoiii! :D"
-	err = syscall.Sendmsg(clientSock, []byte(message), []byte{}, clientAddr, 0)
 
-	if err != nil {
-		os.NewSyscallError("Error On Send...", err)
+	for {
+		//Accept
+		clientSock, clientAddr, err := syscall.Accept(fd)
+		log.Printf("Incoming connection")
+
+		if err != nil {
+			os.NewSyscallError("Error On Accept...", err)
+		}
+		go handleConnection(clientSock, clientAddr)
 	}
-	//Close Connection After SendMsg
-	syscall.Close(clientSock)
 }
