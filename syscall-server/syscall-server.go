@@ -14,26 +14,7 @@ const (
 	COMMON_PORT = 1074
 )
 
-func handleConnection(clientSock int, clientAddr syscall.Sockaddr) {
-	//Send Message
-	message := "HTTP/1.1 200 OK\r\n" +
-		"Content-Type: text/html; charset=utf-8\r\n" +
-		"Content-Length: 20\r\n" +
-		"\r\n" +
-		"<h1>hello world</h1>"
-	time.Sleep(150 * time.Millisecond)
-
-	err := syscall.Sendmsg(clientSock, []byte(message), []byte{}, clientAddr, 0)
-
-	if err != nil {
-		os.NewSyscallError("Error On Send...", err)
-	}
-
-	//Close Connection After SendMsg
-	syscall.Close(clientSock)
-}
-
-func main() {
+func handleListen(host string, port int) (int, error) {
 	/*
 	 AF_INET = Address Family for IPv4
 	 ***AF_INET6 Support IPv6 && AF_INET support
@@ -66,7 +47,36 @@ func main() {
 	} else {
 		fmt.Println("Listen On", COMMON_HOST, ":", COMMON_PORT)
 	}
+	if err != nil {
+		return -1, os.NewSyscallError("Error On Listening This Pors", err)
+	}
+	return fd, nil
+}
 
+func handleConnection(clientSock int, clientAddr syscall.Sockaddr) {
+	//Send Message
+	message := "HTTP/1.1 200 OK\r\n" +
+		"Content-Type: text/html; charset=utf-8\r\n" +
+		"Content-Length: 20\r\n" +
+		"\r\n" +
+		"<h1>hello world</h1>"
+	time.Sleep(150 * time.Millisecond)
+
+	err := syscall.Sendmsg(clientSock, []byte(message), []byte{}, clientAddr, 0)
+
+	if err != nil {
+		os.NewSyscallError("Error On Send...", err)
+	}
+
+	//Close Connection After SendMsg
+	syscall.Close(clientSock)
+}
+
+func main() {
+	fd, err := handleListen(COMMON_HOST, COMMON_PORT)
+	if err != nil {
+		os.NewSyscallError("Error On Run Function", err)
+	}
 	for {
 		//Accept
 		clientSock, clientAddr, err := syscall.Accept(fd)
