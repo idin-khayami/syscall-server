@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	COMMON_HOST = "localhost"
-	COMMON_PORT = 1074
+	CommonHost = "localhost"
+	CommonPort = 1074
 )
 
 func handleListen(host string, port int) (int, error) {
@@ -28,9 +28,9 @@ func handleListen(host string, port int) (int, error) {
 
 	// Bind the socket to a port
 	// SockaddrInet4 --> A Structure, An Ip and a Port
-	sa := &syscall.SockaddrInet4{Port: COMMON_PORT}
+	sa := &syscall.SockaddrInet4{Port: CommonPort}
 	//LookUp to Ip
-	addrs, err := net.LookupHost(COMMON_HOST)
+	addrs, err := net.LookupHost(CommonHost)
 	if err != nil {
 		os.NewSyscallError("Error on convert", err)
 	}
@@ -45,7 +45,7 @@ func handleListen(host string, port int) (int, error) {
 	if err = syscall.Listen(fd, syscall.SOMAXCONN); err != nil {
 		os.NewSyscallError("Error On Listen", err)
 	} else {
-		fmt.Println("Listen On", COMMON_HOST, ":", COMMON_PORT)
+		fmt.Println("Listen On", CommonHost, ":", CommonPort)
 	}
 	if err != nil {
 		return -1, os.NewSyscallError("Error On Listening This Pors", err)
@@ -73,7 +73,7 @@ func handleConnection(clientSock int, clientAddr syscall.Sockaddr) {
 }
 
 func main() {
-	fd, err := handleListen(COMMON_HOST, COMMON_PORT)
+	fd, err := handleListen(CommonHost, CommonPort)
 	if err != nil {
 		os.NewSyscallError("Error On Run Function", err)
 	}
